@@ -4,7 +4,10 @@ from django.contrib.auth import login as authlogin
 from django.contrib.auth import logout as authlogout
 from django.contrib.auth import authenticate as auth
 from django.contrib.auth.decorators import login_required as login_required
-from .models import ORDER_PAYMENT_CHOICES, ORDER_STATUS_CHOICES, Service, Order, OrderService
+from django.utils.timezone import make_aware
+from system.context_processors import SCHEDULE_DATEFORMAT
+from system.filters import OrderServiceFilter
+from .models import ORDER_PAYMENT_CHOICES, ORDER_STATUS_CHOICES, BillingInfo, Service, Order, OrderService
 from django.db.models import Avg, Sum, Count
 from django.views.generic import ListView, DetailView
 from .models import Service
@@ -20,6 +23,8 @@ from .tables import OrderServiceTable
 from django_tables2 import SingleTableView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django_filters.views import FilterView
+from datetime import datetime
+from django.utils.timezone import get_current_timezone
 
 
 def home_view(request):
@@ -56,16 +61,13 @@ def register_view(request):
 
 @login_required
 def cart_summary(request):
-
-    orders = OrderService.objects.filter(user=request.user)
-
     unconfirmed_orders = OrderService.objects.filter(
         user=request.user, confirmed=False)
 
     total_price = compute_total(unconfirmed_orders)
 
     if request.method == "POST":
-
+        billing_info = None
         if unconfirmed_orders.exists():
 
             # First get the order ID
@@ -83,8 +85,18 @@ def cart_summary(request):
                 order_product.confirmed = True
                 order_product.payment_method = payment_method
                 order_product.gcash_number = gcash_number
-                order_product.scheduled_date = scheduled_date
+                order_product.scheduled_date = make_aware(datetime.strptime(
+                    scheduled_date, SCHEDULE_DATEFORMAT), timezone=get_current_timezone())
                 order_product.total_price = total_price
+                if order_product.billing_info is None:
+                    if billing_info is None:
+                        billing_info = BillingInfo.objects.create(
+                            address=request.POST.get('address'),
+                            province=request.POST.get('province'),
+                            city=request.POST.get('city'),
+                            brgy=request.POST.get('brgy'),
+                            zip_code=request.POST.get('zip_code'),)
+                    order_product.billing_info = billing_info
                 order_product.save()
 
             # Update the Order Object
@@ -112,9 +124,9 @@ def compute_total(unconfirmed_orders):
     total = 0
     for order in unconfirmed_orders:
         if order.service.discounted_price > 0:
-            total += order.service.discounted_price
+            total += order.service.discounted_price * order.quantity
         else:
-            total += order.service.price
+            total += order.service.price * order.quantity
     return total
 
 
@@ -138,9 +150,14 @@ def add_to_cart(request, slug):
     # Create OrderProduct given the above objects
     order_product = OrderService.objects.create(user=request.user,
                                                 service=service,
-                                                order=order)
+                                                order=order,
+                                                quantity=request.POST.get('quantity', 1))
 
     return redirect('system:cart-summary')
+
+
+def about(request):
+    return render(request, 'partials/_about.html')
 
 
 class ServiceListView(ListView):
@@ -155,3 +172,4 @@ class OrderServiceListView(LoginRequiredMixin, SingleTableView, FilterView):
     model = OrderService
     table_class = OrderServiceTable
     template_name = 'system/order_summary.html'
+    filterset_class = OrderServiceFilter

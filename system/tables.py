@@ -6,4 +6,5 @@ class OrderServiceTable(tables.Table):
     class Meta:
         model = OrderService
         template_name = "django_tables2/bootstrap.html"
-        fields = ("receipt_no", "total_price", )
+        fields = ("receipt_no", "service", "scheduled_date",
+                  "quantity", "order__status", "total_price", )

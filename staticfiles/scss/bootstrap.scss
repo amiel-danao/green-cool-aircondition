@@ -1,0 +1,36 @@
+/******* Customized Bootstrap ********/
+
+$primary: rgb(0, 197, 59);
+$light: #F5F5F5;
+$dark: #353535;
+
+$font-family-base: 'Open Sans', sans-serif;
+
+$headings-font-family: 'Roboto', sans-serif;
+
+$body-color: #555555;
+
+$headings-color: $dark;
+
+$headings-font-weight: 700;
+
+$display-font-weight: 900;
+
+$enable-responsive-font-sizes: true;
+
+$border-radius: 0px;
+
+$link-decoration: none;
+
+$enable-negative-margins: true;
+
+
+// scss-docs-start theme-colors-map
+$theme-colors: (
+    "primary": $primary,
+    "light": $light,
+    "dark": $dark,
+    "text-primary" : $dark) !default;
+// scss-docs-end theme-colors-map
+
+@import "bootstrap/scss/bootstrap";

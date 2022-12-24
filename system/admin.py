@@ -1,9 +1,13 @@
 from django.contrib import admin
+
+from system.context_processors import SCHEDULE_DATEFORMAT_24H
 from .models import Service, Order, OrderService
 from django.contrib.auth.models import Group
 from .models import ORDER_STATUS_CHOICES
 from django_reverse_admin import ReverseModelAdmin
-
+from django.utils.timezone import make_aware
+from datetime import datetime
+from django.utils.timezone import get_current_timezone
 
 admin.site.unregister(Group)
 
@@ -13,49 +17,27 @@ class ServiceAdmin(admin.ModelAdmin):
     fields = ('name', 'price', 'discounted_price', 'description', 'thumbnail')
 
 
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-# class OrderModelInline(admin.TabularInline):
-#     model = Order
-# fields = ('status',)
-
-
 @admin.register(OrderService)
 class OrderServiceAdmin(ReverseModelAdmin):
     inline_type = 'tabular'
-    inline_reverse = [('receipt_no', 'total_price', 'user', 'service',
-                       'quantity', 'confirmed', 'added_on', 'scheduled_date', 'payment_method', 'gcash_number', 'paid'),
-                      ('order', {'fields': [
-                       'status', ]}),
-                      ]
-    readonly_fields = ('receipt_no', 'total_price', 'user', 'service',
+    fields = ('confirmed', 'paid', 'receipt_no', 'total_price', 'user', 'service_name',
+              'quantity', 'added_on', 'scheduled_date', 'payment_method', 'gcash_number')
+    inline_reverse = [
+        ('order', {'fields': [
+            'status', ]}),
+        ('billing_info', {'fields': [
+                          'address', 'province', 'city', 'brgy', 'zip_code']}),
+    ]
+    readonly_fields = ('receipt_no', 'total_price', 'user', 'service_name',
                        'scheduled_date', 'payment_method', 'quantity', 'gcash_number', 'added_on')
     list_display = ('receipt_no', 'service', 'order', 'quantity',
                     'confirmed', 'status', 'added_on', 'scheduled_date')
 
+    # def schedule_date(self, obj):
+    #     return obj.scheduled_date.strftime('%b %d, %Y, %H:%M %p')
 
-# @admin.register(OrderService)
-# class OrderServiceAdmin(admin.ModelAdmin):
-#     list_display = ('receipt_no', 'service', 'order', 'quantity',
-#                     'confirmed', 'status', 'added_on', 'scheduled_date')
-#     fields = ('receipt_no', 'user', 'service',
-#               'quantity', 'confirmed', 'added_on', 'scheduled_date', 'payment_method', 'gcash_number', 'paid')
-#     readonly_fields = ('receipt_no', 'user', 'service',
-#                        'scheduled_date', 'payment_method', 'quantity', 'gcash_number', 'added_on')
-#     inlines = (OrderModelInline,)
-    # fieldsets = (
-    #     (None, {
-    #         'fields': (
-    #             ('order',),
-    #             ('receipt_no', 'user', 'service',
-    #              'quantity', 'confirmed', 'added_on', 'scheduled_date', 'payment_method', 'gcash_number', 'paid')
-    #         ),
-    #     }),
-    # )
-
+    def service_name(self, obj):
+        return obj.service.name
 
     def status(self, obj):
         status_value = None

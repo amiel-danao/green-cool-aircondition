@@ -91,12 +91,24 @@ def receipt_no_gen() -> str:
     return today_string + next_invoice_number
 
 
+class BillingInfo(models.Model):
+    address = models.CharField(max_length=100)
+    province = models.CharField(max_length=100)
+    city = models.CharField(max_length=50)
+    brgy = models.CharField(max_length=50)
+    zip_code = models.PositiveBigIntegerField(blank=False, default=1234)
+
+    def __str__(self):
+        return self.address
+
+
 class OrderService(models.Model):
     receipt_no = models.CharField(
         max_length=8, primary_key=True,  default=receipt_no_gen)
     user = models.ForeignKey(CustomUser,
                              on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    billing_info = models.ForeignKey(BillingInfo, on_delete=models.CASCADE, null=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     confirmed = models.BooleanField(default=False)
     quantity = models.IntegerField(default=1)

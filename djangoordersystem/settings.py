@@ -91,7 +91,7 @@ if os.environ.get("DJANGO_ENV") == "LOCAL":
             "USER": "root",
             "PASSWORD": "",
             "HOST": "localhost",
-            "PORT": "3333",
+            "PORT": "3306",
             'OPTIONS': {
                     'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             }
@@ -138,9 +138,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 STATIC_URL = "static/"
 
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'djangoordersystem/static'),
+    os.path.join(BASE_DIR, 'static'),
 ]
 
 
