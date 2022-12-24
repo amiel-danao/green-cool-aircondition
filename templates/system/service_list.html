@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container-fluid p-5">
+        <h2>Services</h2>
+        {% for service in object_list %}
+            {% include 'partials/_service_item.html' %}
+        {% endfor %}
+    </div>
+{% endblock %}

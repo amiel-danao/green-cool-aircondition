@@ -1,0 +1,14 @@
+<!-- Service Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="section-title text-center">
+            <h1 class="display-5 mb-5">{{ service_title }}</h1>
+        </div>
+        <div class="row g-4">
+            {% for service in services %}
+                {% include 'partials/_service_item.html' %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- Service End -->

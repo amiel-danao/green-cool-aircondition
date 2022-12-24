@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block mycss %}
+  <!-- Include any additional CSS or JS files here -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_green.css">
+  <!-- Include the default "head" content from the base template -->
+  {{ block.super }}
+  <style>
+    .datepicker-dropdown{
+      z-index: 1021 !important;
+    }
+    .gcash-icon{
+      width:32px;
+      height:32px;
+    }
+
+    .form-control:disabled, .form-control:read-only {
+        background-color: white;
+        opacity: 1;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<section class="h-100 h-custom" style="background-color: #eee;">
+    <div class="container py-5 h-100">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col">
+          <div class="card">
+            <div class="card-body p-4">
+  
+              <div class="row">
+  
+                <div class="col-lg-7">
+                  <h5 class="mb-3"><a href="{% url 'system:services' %}" class="text-body"><i
+                        class="fas fa-long-arrow-alt-left me-2"></i>Browse more services</a></h5>
+                  <hr>
+  
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                      <p class="mb-1">Your Cart</p>
+                      <p class="mb-0">You have {% if items.quantity__sum %}{{ items.quantity__sum }}{% else %}0{% endif %} item{% if items.quantity__sum > 1 %}s{% endif %} in your cart</p>
+                    </div>
+                    <!-- <div>
+                      <p class="mb-0"><span class="text-muted">Sort by:</span> <a href="#!"
+                          class="text-body">price <i class="fas fa-angle-down mt-1"></i></a></p>
+                    </div> -->
+                  </div>
+
+                  {% for order in my_orders %}
+
+                    <div class="card mb-3">
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                          <div class="d-flex flex-row align-items-center">
+                            <div>
+                              <img
+                                src="{% if order.service.thumbnail %}{{ order.service.thumbnail.url }}{% endif %}"
+                                class="img-fluid rounded-3" alt="no image" style="width: 65px;">
+                            </div>
+                            <div class="ms-3">
+                              <h5>{{ order.service.name }}</h5>
+                              <p class="small mb-0">{{ order.service.description }}</p>
+                            </div>
+                          </div>
+                          <div class="d-flex flex-row align-items-center">
+                            <div style="width: 50px;">
+                              <h5 class="fw-normal mb-0">{{ order.quantity }}</h5>
+                            </div>
+                            <div style="width: 80px;">
+                              <h5 class="mb-0">₱{% if order.service.discounted_price > 0 %}{{order.service.discounted_price}}{% else %} {{order.service.price}}{% endif %}</h5>
+                            </div>
+                            <a href="#!" style="color: #cecece;"><i class="fas fa-trash-alt"></i></a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  {% endfor %}
+  
+                  
+                </div>
+                <div class="col-lg-5">
+  
+                  <div class="card rounded-3">
+                    <div class="card-body">
+                      <form class="mt-4" method="post" action="{% url 'system:cart-summary' %}">
+                        {% csrf_token %}
+                          <div class="input-group mb-3 flex-nowrap">                            
+                            <div class="form-floating w-100">
+                              <input type="text" class="form-control" id="datepicker" name="scheduled_date" required>
+                              <label for="datepicker">Schedule date time:</label>
+                            </div>
+                          </div>
+                        <div class="form-group">
+                          <label>Select a payment method:</label>
+                          <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMethod1" value="1" checked>
+                            <label class="form-check-label" for="paymentMethod1">
+                              Cash
+                            </label>
+                          </div>
+                          <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMethod2" value="2">
+                            <label class="form-check-label" for="paymentMethod2">
+                              Thru Gcash
+                              <img src="{% static 'img/gcash-icon.svg' %}" class="gcash-icon">
+                            </label>
+                          </div>
+                        </div>
+
+                        <div class="input-group w-100" id="gcashPhoneNumber" style="display:none;">
+                          <div class="input-group-prepend">
+                            <button class="btn btn-outline-secondary" type="button">
+                              Gcash No.
+                            </button>
+                          </div>
+                          <input type="phone" class="form-control" pattern="^\d{11}$" maxlength="11" name="gcashPhoneNumber">
+                          <!-- <input type="phone" class="form-control" maxlength="11" name="gcashPhoneNumber">                           -->
+                        </div>
+
+                        <hr class="my-4">
+  
+                        <div class="d-flex justify-content-between">
+                          <p class="mb-2">Subtotal</p>
+                          <p class="mb-2">₱{{ total }}</p>
+                        </div>
+    
+                        <div class="d-flex justify-content-between">
+                          <p class="mb-2">Miscellaneous fee</p>
+                          <p class="mb-2">₱{{ miscellaneous_fee }}</p>
+                        </div>
+    
+                        <div class="d-flex justify-content-between mb-4">
+                          <p class="mb-2">Total(Incl. taxes)</p>
+                          <p class="mb-2">₱{{ total|add:miscellaneous_fee }}</p>
+                        </div>
+    
+                        {% if items.quantity__sum %}
+                        <button type="submit" class="btn btn-primary btn-block btn-lg">
+                          <div class="d-flex justify-content-between">
+                            <span class="text-white">Checkout <i class="fas fa-long-arrow-alt-right ms-2"></i></span>
+                          </div>
+                        </button>
+                        {% endif %}
+
+                      </form>
+  
+                      
+  
+                    </div>
+                  </div>
+  
+                </div>
+  
+              </div>
+  
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <p id="dateToday" hidden>{% now 'Y-m-d' %}</p>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <script>
+    let today = $('#dateToday').text();
+    console.log(`today is : ${today}`);
+    let optional_config = {
+        enableTime: true,
+        altInput: true,
+        altFormat: "F j, Y H:i",
+        dateFormat: "Y-m-d H:i",
+        defaultDate: today,
+        minTime: "09:00",
+        maxTime: "17:00",
+        minuteIncrement: 30,
+        minDate: today
+    }
+
+    const datePicker = $("#datepicker").flatpickr(optional_config);
+    datePicker.open();
+    
+  </script>
+  <script>
+    const cashRadio = document.querySelector('input[id="paymentMethod1"]');
+    const gcashRadio = document.querySelector('input[id="paymentMethod2"]');
+    
+   cashRadio.addEventListener('change', () => {
+      let selectedValue = $("input[name='paymentMethod']").filter(':checked').val();
+      console.log(selectedValue);
+      // Use the selected value to do something
+      if (selectedValue === this.value) {
+        $("#gcashPhoneNumber").hide();
+        $('input[name="gcashPhoneNumber"]').removeAttr('required');
+      }
+    });
+    
+    gcashRadio.addEventListener('change', () => {
+      let selectedValue = $("input[name='paymentMethod']").filter(':checked').val();
+      // Use the selected value to do something
+      console.log(selectedValue);
+      if (selectedValue === this.value) {
+        $("#gcashPhoneNumber").show();
+        $('input[name="gcashPhoneNumber"]').attr({required: true});
+      }
+    });
+
+    
+  </script>
+  
+{% endblock %}

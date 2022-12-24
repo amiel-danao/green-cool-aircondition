@@ -1,0 +1,19 @@
+{% extends 'admin/base.html' %}
+
+{% block extrahead %}{{ block.super }}
+<style>
+  :root {
+    --primary: rgb(0, 197, 59);
+    --secondary: #4a9041;
+  }
+</style>
+{% endblock %}
+
+{% block branding %}
+{{ block.super }}
+    <h1 id="site-name">
+        <a href="{% url 'admin:index' %}">
+            <img src="{% static 'favicon.ico' %}" height="40px" />
+        </a>
+    </h1>
+{% endblock %}

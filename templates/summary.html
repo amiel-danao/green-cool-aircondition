@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<section class="section">
+    <section class="container">
+        <div class="content">
+        <h1 class="title">Order Summary</h1>
+        <table class="table is-striped" style="font-size: .9rem;">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Product Price</th>
+                    <th>Product Status</th>
+                    <th>Order ID</th>
+                    <th>Order Started</th>
+                    <th>Order Confirmed</th>
+                    <th>Product Confirmed</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for d in data %}
+                <tr>
+                    <td>{{d.product.product_name}}</td>
+                    <td style="font-family: monospace;">${{d.product.price}}</td>
+                    <td style="font-family: monospace;">{{d.added_on}}</td>
+                    <td style="font-family: monospace;">{{d.order.id}}</td>
+                    <td style="font-family: monospace;">{{d.order.order_started}}</td> 
+
+                    {% if d.order.status %} 
+                        <td><p class="tag is-success">Confirmed</p></td>
+                    {% else %}
+                    <td><p class="tag is-danger">Unconfirmed</p></td>
+                    {% endif %}
+                    
+                    {% if d.confirmed %} 
+                        <td><p class="tag is-success">Confirmed</p></td>
+                    {% else %}
+                     <td><p class="tag is-danger">Unconfirmed</p></td>
+                    {% endif %}
+
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <p>Order Total: ${{total.product__price__sum}}</p>
+        <p>Number of items in order: {{items.quantity__sum}}</p>
+        <a href="{% url 'system:confirm-order' %}" class="button is-primary is-outlined">Confirm Order</a>
+    </div>
+    </section>
+</section>
+{% endblock content %}
