@@ -1,6 +1,7 @@
 
 Download Python 3.9.13 - Programming language  https://www.python.org/ftp/python/3.9.13/python-3.9.13-amd64.exe
 Checkbox should be checked for Add Python to PATH
+click windows icon/start menu then search "alias" on the bottom most part of the screen turn off the two python entries
 python --version //To check if the python was properly installed
 
 Django 4.1.3 - Framework  pip install Django

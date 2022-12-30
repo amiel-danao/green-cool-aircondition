@@ -9,4 +9,4 @@ class OrderServiceFilter(django_filters.FilterSet):
     class Meta:
         model = OrderService
         fields = ['receipt_no', 'order',
-                  'scheduled_date', 'status', 'total_price']
+                  'scheduled_date', 'status']

@@ -6,11 +6,12 @@
             <div class="row gx-4 gx-lg-5 align-items-center">
                 <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" src="{% if service.thumbnail %}{{ service.thumbnail.url }}{% endif %}" alt="{{ service.name }}" /></div>
                 <div class="col-md-6">
-                    <!-- <div class="small mb-1">SKU: BST-498</div> -->
                     <h1 class="display-5 fw-bolder">{{ service.name }}</h1>
-                    <div class="fs-5 mb-5">                        
+                    <div class="fs-5 mb-5">
+                        {% if service.price > 0 %}
                         <span class="text-decoration-line-through">₱{{ service.price }}</span>
-                        {% if service.discounted_price %}
+                        {% endif %}
+                        {% if service.discounted_price > 0 %}
                         <span>₱{{ service.discounted_price }}</span>
                         {% endif %}
                     </div>
@@ -37,7 +38,7 @@
     <!-- Related items section-->
     <section class="py-5 bg-light">
         {% if services %}
-            {% include 'partials/_services.html' with service_title='Other Services' %}
+            {% include 'partials/_services.html' with service_title='Services offered' %}
         {% endif %}
     </section>
     

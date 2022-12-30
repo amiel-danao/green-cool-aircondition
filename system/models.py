@@ -87,7 +87,7 @@ def receipt_no_gen() -> str:
         receipt_no__startswith=today_string).order_by('receipt_no').last()
     if last_invoice:
         last_invoice_number = int(last_invoice.receipt_no[6:])
-        next_invoice_number = '{0:04d}'.format(last_invoice_number + 1)
+        next_invoice_number = '{0:02d}'.format(last_invoice_number + 1)
     return today_string + next_invoice_number
 
 
@@ -122,6 +122,14 @@ class OrderService(models.Model):
     gcash_number = PhoneNumberField(region='PH', null=True)
     total_price = models.FloatField(
         validators=[MinValueValidator(0)], default=0)
+
+    @property
+    def price(self):
+        if self.service.price:
+            return self.service.price * self.quantity
+        elif self.service.discounted_price:
+            return self.service.discounted_price * self.quantity
+        return 0
 
     def __str__(self):
         return f"{self.quantity} units of {self.service.name}"

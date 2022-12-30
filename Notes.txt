@@ -1,0 +1,7 @@
+change text of home page - OK
+remove free quote button- OK
+change Our services into Services offered- OK
+remove discounted price when zero - OK
+add delete functionality of cart - OK
+filter order-summary by user - OK
+add to cart more than one service - OK

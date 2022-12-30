@@ -9,7 +9,7 @@ from system.context_processors import SCHEDULE_DATEFORMAT
 from system.filters import OrderServiceFilter
 from .models import ORDER_PAYMENT_CHOICES, ORDER_STATUS_CHOICES, BillingInfo, Service, Order, OrderService
 from django.db.models import Avg, Sum, Count
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, DeleteView
 from .models import Service
 from django.contrib.auth import login
 from django.contrib import messages
@@ -98,11 +98,14 @@ def cart_summary(request):
                             zip_code=request.POST.get('zip_code'),)
                     order_product.billing_info = billing_info
                 order_product.save()
+                order_product.order.status = 1
+                order_product.order.save()
+
 
             # Update the Order Object
-            order = Order.objects.filter(id=order_id)[0]
-            order.status = 1
-            order.save()
+            # order = Order.objects.filter(id=order_id)[0]
+            # order.status = 1
+            # order.save()
 
         else:
             print("No outstanding items")
@@ -139,13 +142,13 @@ def add_to_cart(request, slug):
     service = get_object_or_404(Service, slug=slug)
 
     # Create or store Order object based on conditional
-    order_queryset = Order.objects.filter(
-        user=request.user, status=False)
+    # order_queryset = Order.objects.filter(
+    #     user=request.user, status=False)
 
-    if order_queryset.exists():
-        order = order_queryset[0]
-    else:
-        order = Order.objects.create(user=request.user)
+    # if order_queryset.exists():
+    #     order = order_queryset[0]
+    # else:
+    order = Order.objects.create(user=request.user)
 
     # Create OrderProduct given the above objects
     order_product = OrderService.objects.create(user=request.user,
@@ -168,8 +171,25 @@ class ServiceDetailView(DetailView):
     model = Service
 
 
-class OrderServiceListView(LoginRequiredMixin, SingleTableView, FilterView):
+class OrderServiceListView(LoginRequiredMixin, SingleTableView):
     model = OrderService
     table_class = OrderServiceTable
     template_name = 'system/order_summary.html'
-    filterset_class = OrderServiceFilter
+    # filterset_class = OrderServiceFilter
+    per_page = 8
+
+    def get_table_data(self):
+        return OrderService.objects.filter(user=self.request.user, confirmed=True)
+
+
+# class OrderDeleteView(DeleteView):
+#     model = Order
+#     success_url = reversed("system:cart-summary")
+#     template_name = "geeks/geeksmodel_confirm_delete.html"
+
+def delete_order(request, pk):
+    order_service = get_object_or_404(OrderService, pk=pk)
+    order = get_object_or_404(Order, pk=order_service.order.pk)
+    order.delete()
+    order_service.delete()
+    return redirect('system:cart-summary')
