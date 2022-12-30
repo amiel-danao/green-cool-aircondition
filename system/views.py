@@ -53,7 +53,7 @@ def register_view(request):
             user = form.save()
             login(request, user)
             messages.success(request, "Registration successful.")
-            return HttpResponseRedirect(request.path_info)
+            return redirect('system:home')
         messages.error(
             request, "Unsuccessful registration. Invalid information.")
     return render(request=request, template_name="registration/register.html", context={"form": form})
