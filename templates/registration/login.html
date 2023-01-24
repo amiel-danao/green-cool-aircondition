@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<section class="vh-100">
+<section class="">
     <div class="container h-100">
       <div class="row d-flex align-items-center justify-content-center h-100">
         <!-- <div class="col-md-8 col-lg-7 col-xl-6">
@@ -28,6 +28,7 @@
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
                         <form method="POST" action="{% url 'system:login' %}">
+                            <div id='form-errors'>{{ form_errors }}</div>  
                             {% csrf_token %}
                             {{ form|crispy }}
                             <div class="row mb-4">

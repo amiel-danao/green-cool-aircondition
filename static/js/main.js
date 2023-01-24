@@ -1,6 +1,9 @@
 (function ($) {
     "use strict";
 
+    let abc = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    let tooltipList = [...abc].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
     // Spinner
     var spinner = function () {
         setTimeout(function () {

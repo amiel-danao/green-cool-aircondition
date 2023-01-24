@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+
+{% block mycss %}
+<link href="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-star-rating@4.1.2/css/star-rating.min.css" media="all" rel="stylesheet" type="text/css" />
+<!-- with v4.1.0 Krajee SVG theme is used as default (and must be loaded as below) - include any of the other theme CSS files as mentioned below (and change the theme property of the plugin) -->
+<link href="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-star-rating@4.1.2/themes/krajee-svg/theme.css" media="all" rel="stylesheet" type="text/css" />
+{% endblock mycss %}
+
+{% block content %}
+<div class="p-5 row">
+    <h1>Order information</h1>
+
+    <div class="card col-6 bg-info">
+        <!-- <img src="..." class="card-img-top" alt="..."> -->
+        <div class="card-header">
+            <h5 class="card-title">{% include 'bootstrap5/floating_field.html' with field=form.receipt_no %}</h5>
+        </div>
+        <div class="card-body">
+            
+          <p class="card-text">Status : {{ status }}</p>
+          <p class="card-text">Service : {{ service.name }}</p>
+          <p class="card-text">Date : {{ object.added_on }}</p>
+          <p class="card-text">Total Price : {{ object.total_price }}</p>
+          <!-- <a href="#" class="btn btn-primary">Go somewhere</a> -->
+        </div>
+        <div class="card-footer">
+            <p class="card-text">Technician assigned: {{ technician }}</p>
+        </div>
+      </div>
+
+      <div class="col">
+        {% if object.order.order.status != DONE_STATUS %}
+          <h4 class="text-center fst-italic">You can send feedback here once the service is done.</h4>
+        {% else %}
+        <form class="form" method="POST" action="{% url 'system:submit_feedback' pk=object.pk %}">
+          {% csrf_token %}
+          {% if not has_feedback %}
+          <label for="feedback">What do you think about the service?</label>
+          <textarea id="feedback" name="feedback" class="form-control" rows="5" required></textarea>
+          <label for="input-1" class="control-label">Rate the Service</label>
+          {% else %}
+          <textarea id="feedback" name="feedback" class="form-control-plaintext" rows="5" readonly>
+            {{has_feedback.feedback}}
+          </textarea>
+          <label for="input-1" class="control-label">You rated this service:</label>
+          {% endif %}
+
+          
+          <input hidden id="input-1" name="rating" value="{{has_feedback.rating}}" data-step="1" data-min="0" data-max="5">
+
+          {% if not has_feedback %}
+          <input class="btn btn-primary" type="submit" value="Submit Feedback">
+          {% endif %}
+        </form>
+        {% endif %}
+      </div>
+    
+</div>
+
+{% endblock %}
+
+{% block myjs %}
+{{block.super}}
+<script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-star-rating@4.1.2/js/star-rating.min.js" type="text/javascript"></script>
+<!-- with v4.1.0 Krajee SVG theme is used as default (and must be loaded as below) - include any of the other theme JS files as mentioned below (and change the theme property of the plugin) -->
+<script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-star-rating@4.1.2/themes/krajee-svg/theme.js"></script>
+{% if has_feedback %}
+<script>
+  $(document).ready(function(){
+      $('#input-1').rating({displayOnly: true});
+  });
+  </script>
+  {%else%}
+  <script>
+    $(document).ready(function(){
+        $('#input-1').rating({displayOnly: false});
+    });
+    </script>
+  {%endif%}
+{% endblock myjs %}

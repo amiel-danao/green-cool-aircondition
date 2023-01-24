@@ -3,7 +3,7 @@ from django.db import models
 from django.conf import settings
 from django.shortcuts import redirect, reverse
 from django.utils import timezone
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 from djangoordersystem.managers import CustomUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
@@ -11,18 +11,11 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.utils.text import slugify
 
 
-ORDER_STATUS_CHOICES = [
-    (1, "Pending"),
-    (2, "On the way"),
-    (3, "Ongoing"),
-    (4, "Done")
-]
 
-ORDER_PAYMENT_CHOICES = [
-    (1, "Cash"),
-    (2, "GCash"),
-]
 
+class PaymentMethod(models.IntegerChoices):
+    CASH = 1, "Cash"
+    GCASH = 2, "GCash"
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
@@ -32,6 +25,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
+    is_technician = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -44,6 +38,18 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "User"
 
+class UserProfile(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=False)
+    first_name = models.CharField(max_length=30, default='', blank=False)
+    middle_name = models.CharField(max_length=30, default='')
+    last_name = models.CharField(max_length=30, default='', blank=False)
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
+
+class TechnicianProfile(UserProfile):
+    pass
 
 class Service(models.Model):
     name = models.CharField(max_length=255)
@@ -67,17 +73,23 @@ class Service(models.Model):
         self.slug = slugify(self.name)
         super(Service, self).save(*args, **kwargs)
 
+class Status(models.IntegerChoices):
+    PENDING = 1, "Pending"
+    ON_THE_WAY = 2, "On the way"
+    ONGOING = 3, "Ongoing"
+    DONE = 4, "Done"
 
 class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     status = models.PositiveIntegerField(
-        default=1, choices=ORDER_STATUS_CHOICES)
+        default=Status.PENDING, choices=Status.choices)
     order_started = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.id}"
 
+        
 
 def receipt_no_gen() -> str:
     today = datetime.date.today()
@@ -116,7 +128,7 @@ class OrderService(models.Model):
     added_on = models.DateTimeField(auto_now_add=True)
     paid = models.BooleanField(default=False)
     payment_method = models.PositiveIntegerField(
-        default=1, choices=ORDER_PAYMENT_CHOICES)
+        default=PaymentMethod.CASH, choices=PaymentMethod.choices)
 
     scheduled_date = models.DateTimeField(auto_now_add=True)
     gcash_number = PhoneNumberField(region='PH', null=True)
@@ -132,4 +144,34 @@ class OrderService(models.Model):
         return 0
 
     def __str__(self):
-        return f"{self.quantity} units of {self.service.name}"
+        return self.receipt_no
+
+
+class Task(models.Model):
+    order = models.OneToOneField(OrderService, on_delete=models.CASCADE)
+    technician = models.ForeignKey(TechnicianProfile, on_delete=models.CASCADE)
+    date_assigned = models.DateTimeField(auto_now_add=True)
+    date_finished = models.DateTimeField(null=True)
+    
+    class Meta:
+        unique_together = ('order', 'technician')
+
+    def __str__(self):
+        return f'{self.order.receipt_no}-{self.technician}'
+
+    def save(self, *args, **kwargs):
+        if self.order.order.status == Status.DONE:
+            self.date_finished = timezone.now()
+        else:
+            self.date_finished = None
+        return super().save(*args, **kwargs)
+
+
+class ServiceFeedback(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.SET_NULL, null=True)
+    feedback = models.CharField(max_length=256, blank=False, default='')
+    rating = models.IntegerField(default=0, validators=(MinValueValidator(0), MaxValueValidator(5)))
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.task.order.receipt_no}-{self.task.technician}'

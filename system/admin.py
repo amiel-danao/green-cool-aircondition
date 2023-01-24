@@ -1,9 +1,8 @@
 from django.contrib import admin
 
 from system.context_processors import SCHEDULE_DATEFORMAT_24H
-from .models import Service, Order, OrderService
+from .models import CustomUser, Service, Order, OrderService, ServiceFeedback, Status, Task, TechnicianProfile
 from django.contrib.auth.models import Group
-from .models import ORDER_STATUS_CHOICES
 from django_reverse_admin import ReverseModelAdmin
 from django.utils.timezone import make_aware
 from datetime import datetime
@@ -15,6 +14,13 @@ admin.site.unregister(Group)
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     fields = ('name', 'price', 'discounted_price', 'description', 'thumbnail')
+    list_display = ('name', 'price', 'discounted_price', )
+
+@admin.register(CustomUser)
+class CustomUserAdmin(admin.ModelAdmin):
+    fields = ('email', 'picture', 'is_active', 'is_superuser', 'is_technician', 'last_login')
+    readonly_fields = ('email', 'last_login')
+    list_display = ('email', 'is_active', 'is_superuser', 'is_technician', 'last_login')
 
 
 @admin.register(OrderService)
@@ -40,12 +46,26 @@ class OrderServiceAdmin(ReverseModelAdmin):
         return obj.service.name
 
     def status(self, obj):
-        status_value = None
-        if obj.order is not None:
-            status_value = [
-                tup for tup in ORDER_STATUS_CHOICES if obj.order.status in tup][0][1]
-        return status_value
+        return Status(obj.order.status).label
 
+@admin.register(TechnicianProfile)
+class TechnicianProfileAdmin(admin.ModelAdmin):
+    pass
+
+
+
+@admin.register(Task)
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ('technician', 'order_status', 'date_finished')
+    readonly_fields = ('date_finished',)
+
+    def order_status(self, obj):
+        return Status(obj.order.order.status).label
+
+@admin.register(ServiceFeedback)
+class ServiceFeedbackAdmin(admin.ModelAdmin):
+    list_display = ('task', 'feedback', 'rating')
+    readonly_fields = ('task', 'feedback', 'rating')
 
 admin.site.site_header = "Green Cool Refrigeration Air-Conditioning Supply and Services Corporation"
 admin.site.site_title = "Green Cool Refrigeration Air-Conditioning Supply and Services Corporation"

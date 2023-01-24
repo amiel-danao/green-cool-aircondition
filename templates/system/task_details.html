@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+
+
+{% block mycss %}
+<style>
+  .btn.btn-secondary {
+  color: #7e7e7e;
+}
+</style>
+
+{% endblock mycss %}
+
+{% block content %}
+<div class="p-5 row">
+    <h1>Task Details</h1>
+
+    <div class="card col-6 bg-info">
+        <!-- <img src="..." class="card-img-top" alt="..."> -->
+        <div class="card-header">
+            <h5 class="card-title">Receipt No. {{ object.order.receipt_no }}</h5>
+        </div>
+        <div class="card-body">
+            
+          <p class="card-text">Customer : {{ customer_name }}</p>
+          <p class="card-text">Service : {{ service.name }}</p>
+          <p class="card-text">Date : {{ object.order.added_on }}</p>
+          
+
+          <p class="card-text">Status : {{ status }}</p>
+
+          
+
+        </div>
+        <div class="card-footer">
+            {% if object.order.order.status != DONE_STATUS %}
+            <button class="btn btn-primary text-white" data-bs-toggle="modal" data-bs-target="#exampleModal">Mark as {{next_status}}</button>
+            {% else %}
+            <p class="card-text">Date Finished: {{ object.date_finished }}</p>
+            {% endif %}
+        </div>
+      </div>
+      
+    
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Mark as {{next_status}}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you are {{next_status}} with this task?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <a href="{% url 'system:task-status-update' pk=object.pk status=object.order.order.status|add:'1' %}" type="button" class="btn btn-primary text-white">Yes</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}

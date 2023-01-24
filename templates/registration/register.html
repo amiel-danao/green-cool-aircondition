@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<section class="vh-100">
+<section class="">
     <div class="container h-100">
       <div class="row d-flex align-items-center justify-content-center h-100">
         <!-- <div class="col-md-8 col-lg-7 col-xl-6">
@@ -29,13 +29,16 @@
                     <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
                         
                         <form method="POST" action="{% url 'system:register' %}">
+                            <div id='form-errors'>{{ form_errors }}</div>
                             {% csrf_token %}
                             {{ form|crispy }}
                             <div class="form-check d-flex justify-content-center mb-4">
-                            <input class="form-check-input me-2" type="checkbox" value="" id="registerCheck" checked
-                                aria-describedby="registerCheckHelpText" required/>
-                            <label class="form-check-label" for="registerCheck">
-                                I have read and agree to the <a href="#">terms</a>
+                            <input class="form-check-input me-2" type="checkbox" name="is_technician" id="registerTechnician" 
+                                aria-describedby="registerCheckHelpText"/>
+                            <label class="form-check-label" for="registerTechnician">
+                                Register as a Technician<i class="bi bi-question-circle-fill" data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-custom-class="custom-tooltip"
+                                data-bs-title="After registering as a Technician, wait for the admin to activate your account before you can login."></i>
                             </label>
                             </div>
 
@@ -52,4 +55,13 @@
       </div>
     </div>
   </section>
+
+  {% block myjs %}
+  {{ block.super }}
+  <script>
+    // import { Tooltip } from '../../static/js/bootstrap.esm.min.js'
+    
+  </script>
+  {% endblock myjs %}
+  
 {% endblock content %}
