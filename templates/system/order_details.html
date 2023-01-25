@@ -31,7 +31,7 @@
       </div>
 
       <div class="col">
-        {% if object.order.order.status != DONE_STATUS %}
+        {% if object.order.status != DONE_STATUS %}
           <h4 class="text-center fst-italic">You can send feedback here once the service is done.</h4>
         {% else %}
         <form class="form" method="POST" action="{% url 'system:submit_feedback' pk=object.pk %}">
@@ -41,9 +41,7 @@
           <textarea id="feedback" name="feedback" class="form-control" rows="5" required></textarea>
           <label for="input-1" class="control-label">Rate the Service</label>
           {% else %}
-          <textarea id="feedback" name="feedback" class="form-control-plaintext" rows="5" readonly>
-            {{has_feedback.feedback}}
-          </textarea>
+          <textarea id="feedback" name="feedback" class="form-control-plaintext" rows="5" readonly>{{has_feedback.feedback}}</textarea>
           <label for="input-1" class="control-label">You rated this service:</label>
           {% endif %}
 
